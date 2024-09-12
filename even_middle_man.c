@@ -1,3 +1,10 @@
+/* *************************************************** *
+ * odd_middle_man.c:                                   *
+ *                                                     *
+ * September 3, 2024                                   *
+ *                                                     *
+ * *************************************************** */
+
 // even_middle_man.c
 #include <stdio.h>          // for printf
 #include <stdlib.h>         // for exit
