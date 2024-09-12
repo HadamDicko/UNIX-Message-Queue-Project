@@ -7,8 +7,8 @@ This project demonstrates inter-process communication in C using message queues.
 ## Components
 
 - **sender.c**: Generates random numbers and sends them to two message queues.
-- **odd_middle_man.c**: Receives and processes numbers from the message queue designated for odd numbers.
-- **even_middle_man.c**: Receives and processes numbers from the message queue designated for even numbers.
+- **odd_middle_man.c**: Receives and processes numbers from the message queue designated for odd numbered indexes.
+- **even_middle_man.c**: Receives and processes numbers from the message queue designated for even numbered indexes.
 
 ## Prerequisites
 
