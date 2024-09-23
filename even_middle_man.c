@@ -1,51 +1,65 @@
 /* *************************************************** *
- * odd_middle_man.c:                                   *
- *                                                     *
+ * even_middle_man.c:                                   *
+ * hdicko@siue.edu Hadam Dicko                         *
  * September 3, 2024                                   *
  *                                                     *
  * *************************************************** */
 
-// even_middle_man.c
-#include <stdio.h>          // for printf
-#include <stdlib.h>         // for exit
-#include <sys/types.h>      // for message queue
-#include <sys/ipc.h>        // for message queue
-#include <sys/msg.h>        // for message queue
-#include <unistd.h>         // for sleep
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <unistd.h>
 
-#define MSG_key_02 8911     // Message queue key for even-indexed messages
-#define BUFFER_SIZE 256      // Max message size
+#define MSG_key_01   8265  // message queue key from sender
+#define MSG_key_03   9265  // message queue key for even receiver
+
+#define BUFFER_SIZE   256  // max. message size
 
 struct message {
-    long mtype;              // Message type
-    char mtext[BUFFER_SIZE]; // Message text
+    long mtype;
+    char mtext[BUFFER_SIZE];
 };
 
 int main(void) {
-    int msqid;               // Message queue ID
-    struct message buf;      // Message buffer
+    int msqid_01, msqid_03;
+    key_t msgkey_01 = MSG_key_01;
+    key_t msgkey_03 = MSG_key_03;
 
-    // Get the message queue
-    msqid = msgget(MSG_key_02, 0666 | IPC_CREAT);
-    if (msqid < 0) {
-        perror("msgget");
-        exit(EXIT_FAILURE);
+    struct message buf;
+
+    // Create the message queue for the receiver
+    msqid_03 = msgget(msgkey_03, 0666 | IPC_CREAT);
+    if (msqid_03 < 0) {
+        perror("Error creating message queue for receiver");
+        return 1;
     }
 
-    printf("Even Middle Man started. Waiting for messages...\n");
+    // Get the message queue ID from the sender
+    msqid_01 = msgget(msgkey_01, 0666);
+    if (msqid_01 < 0) {
+        perror("Error accessing sender's message queue");
+        return 1;
+    }
 
-    // Receive messages
-    for (int i = 0; i < 50; i++) {  // Expecting 50 messages
-        if (msgrcv(msqid, (struct msgbuf *)&buf, sizeof(buf.mtext), 1, 0) < 0) {
-            perror("msgrcv");
+    // Receive messages from the sender
+    for (int i = 0; i < 100; i++) {
+        if (msgrcv(msqid_01, &buf, sizeof(buf.mtext), 0, 0) < 0) {
+            perror("Error receiving message");
             break;
         }
-        unsigned char received_number = buf.mtext[0];
-        printf("Received from even index %d: %d\n", i * 2, received_number);
+
+        unsigned char num = (unsigned char)buf.mtext[0];
+        if (i % 2 == 1) {  // Process only even-indexed messages (2nd, 4th, ...)
+            // Send the even number to the receiver
+            buf.mtype = 1; // Set message type
+            buf.mtext[0] = num; // Send the even number
+            msgsnd(msqid_03, &buf, sizeof(buf.mtext), 0);
+        }
     }
 
-    // Cleanup
-    msgctl(msqid, IPC_RMID, NULL);
-    printf("Even Middle Man finished.\n");
+    // Clean up: delete the message queue
+    msgctl(msqid_03, IPC_RMID, NULL);
     return 0;
 }
