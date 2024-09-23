@@ -1,50 +1,65 @@
 /* *************************************************** *
  * odd_middle_man.c:                                   *
- *                                                     *
+ * hdicko@siue.edu Hadam Dicko                         *
  * September 3, 2024                                   *
  *                                                     *
  * *************************************************** */
 
-#include <stdio.h>          // for printf
-#include <stdlib.h>         // for exit
-#include <sys/types.h>      // for message queue
-#include <sys/ipc.h>        // for message queue
-#include <sys/msg.h>        // for message queue
-#include <unistd.h>         // for sleep
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <unistd.h>
 
-#define MSG_key_01 8910     // Message queue key for odd-indexed messages
-#define BUFFER_SIZE 256      // Max message size
+#define MSG_key_02   8765  // message queue key from sender
+#define MSG_key_04   9565  // message queue key for odd receiver
+
+#define BUFFER_SIZE   256  // max. message size
 
 struct message {
-    long mtype;              // Message type
-    char mtext[BUFFER_SIZE]; // Message text
+    long mtype;
+    char mtext[BUFFER_SIZE];
 };
 
 int main(void) {
-    int msqid;               // Message queue ID
-    struct message buf;      // Message buffer
+    int msqid_02, msqid_04;
+    key_t msgkey_02 = MSG_key_02;
+    key_t msgkey_04 = MSG_key_04;
 
-    // Get the message queue
-    msqid = msgget(MSG_key_01, 0666 | IPC_CREAT);
-    if (msqid < 0) {
-        perror("msgget");
-        exit(EXIT_FAILURE);
+    struct message buf;
+
+    // Create the message queue for the receiver
+    msqid_04 = msgget(msgkey_04, 0666 | IPC_CREAT);
+    if (msqid_04 < 0) {
+        perror("Error creating message queue for receiver");
+        return 1;
     }
 
-    printf("Odd Middle Man started. Waiting for messages...\n");
+    // Get the message queue ID from the sender
+    msqid_02 = msgget(msgkey_02, 0666);
+    if (msqid_02 < 0) {
+        perror("Error accessing sender's message queue");
+        return 1;
+    }
 
-    // Receive messages
-    for (int i = 0; i < 50; i++) {  // Expecting 50 messages
-        if (msgrcv(msqid, (struct msgbuf *)&buf, sizeof(buf.mtext), 1, 0) < 0) {
-            perror("msgrcv");
+    // Receive messages from the sender
+    for (int i = 0; i < 100; i++) {
+        if (msgrcv(msqid_02, &buf, sizeof(buf.mtext), 0, 0) < 0) {
+            perror("Error receiving message");
             break;
         }
-        unsigned char received_number = buf.mtext[0];
-        printf("Received from odd index %d: %d\n", i * 2 + 1, received_number);
+
+        unsigned char num = (unsigned char)buf.mtext[0];
+        if (i % 2 == 0) {  // Process only odd-indexed messages (1st, 3rd, ...)
+            // Send the odd number to the receiver
+            buf.mtype = 1; // Set message type
+            buf.mtext[0] = num; // Send the odd number
+            msgsnd(msqid_04, &buf, sizeof(buf.mtext), 0);
+        }
     }
 
-    // Cleanup
-    msgctl(msqid, IPC_RMID, NULL);
-    printf("Odd Middle Man finished.\n");
+    // Clean up: delete the message queue
+    msgctl(msqid_04, IPC_RMID, NULL);
     return 0;
 }
