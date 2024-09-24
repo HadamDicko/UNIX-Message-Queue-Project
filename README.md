@@ -51,7 +51,7 @@ cc receiver.c
 cc receiver.c
 ./a.out
 ```
-# sender.c (terminal 4)
+# sender.c (terminal 1)
 ```bash
 Press any key: 
 ```
