@@ -19,12 +19,13 @@ This project demonstrates inter-process communication in C using message queues.
 ## Setup 
 
 - Putty terminal for each process
-- WinSCP for file transfer
+- WinSCP for file transfer (Files must be in same location)
 
 ## Compilation
 
 -To compile the source code, open 5 Putty terminals
--One for sender.c, one for each middle man, one for each receiver
+-One for sender.c, one for each middle man, and one for each receiver.
+-Utilize cd and ls to access same folder location for each
 
 # sender.c (terminal 1)
 ```bash
