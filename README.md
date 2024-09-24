@@ -9,6 +9,7 @@ This project demonstrates inter-process communication in C using message queues.
 - **sender.c**: Generates random numbers and sends them to two message queues.
 - **odd_middle_man.c**: Receives and processes numbers from the message queue designated for odd numbered indexes.
 - **even_middle_man.c**: Receives and processes numbers from the message queue designated for even numbered indexes.
+- **receiver.c**: Executable file.
 
 ## Prerequisites
 
@@ -22,11 +23,36 @@ This project demonstrates inter-process communication in C using message queues.
 
 ## Compilation
 
-To compile the source code, run the following commands in the terminal:
+-To compile the source code, open 5 Putty terminals
+-One for sender.c, one for each middle man, one for each receiver
 
+# sender.c (terminal 1)
 ```bash
-gcc -o sender sender.c
-gcc -o even_middle_man even_middle_man.c
-gcc -o odd_middle_man odd_middle_man.c
-gcc -o receiver_even receiver_even.c
-gcc -o receiver_odd receiver_odd.c
+cc sender.c
+./a.out
+```
+# odd_middle_man.c (terminal 2)
+```bash
+cc odd_middle_man.c
+./a.out
+```
+# even_middle_man.c (terminal 3)
+```bash
+cc even_middle_man.c
+./a.out
+```
+# receiver.c (terminal 4)
+```bash
+cc receiver.c
+./a.out
+```
+# receiver.c (terminal 5)
+```bash
+cc receiver.c
+./a.out
+```
+# sender.c (terminal 4)
+```bash
+Press any key: 
+```
+
